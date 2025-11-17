@@ -1,0 +1,36 @@
+services:
+  auth:
+    container_name: ms-auth
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    env_file:
+      - ./auth/.env
+    ports:
+      - "6000:6000"
+    depends_on:
+      - auth-db
+    networks:
+      - default
+
+  auth-db:
+    image: postgres:latest
+    container_name: ms-postgres
+    environment:
+      POSTGRES_USER: quickedit-auth
+      POSTGRES_PASSWORD: quickedit-auth
+      POSTGRES_DB: auth_db
+    volumes:
+      - server_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - default
+
+volumes:
+  server_data:
+
+networks:
+  default:
+    name: ms-network
+    driver: bridge
