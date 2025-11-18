@@ -15,10 +15,10 @@ services:
 
   auth-db:
     image: postgres:latest
-    container_name: ms-postgres
+    container_name: auth-db
     environment:
-      POSTGRES_USER: quickedit-auth
-      POSTGRES_PASSWORD: quickedit-auth
+      POSTGRES_USER: ms-auth
+      POSTGRES_PASSWORD: ms-auth
       POSTGRES_DB: auth_db
     volumes:
       - server_data:/var/lib/postgresql/data
