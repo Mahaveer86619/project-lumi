@@ -1,0 +1,6 @@
+Customise the avatar generation, 
+made circular, 
+found browsers have dedicated GPUs for these type of task and my server doesnot.
+
+make docker buid multi stage
+
