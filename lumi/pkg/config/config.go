@@ -19,6 +19,8 @@ type Config struct {
 
 	// ms
 	AuthServiceURL string
+	WahaServiceURL string
+	WahaAPIKey     string
 }
 
 var GConfig *Config
@@ -41,6 +43,8 @@ func InitConfig() {
 
 		// ms
 		AuthServiceURL: getEnv("AUTH_SERVICE_URL"),
+		WahaServiceURL: getEnv("WAHA_SERVICE_URL"),
+		WahaAPIKey:     getEnv("WAHA_API_KEY"),
 	}
 }
 

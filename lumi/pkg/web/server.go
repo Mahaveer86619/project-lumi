@@ -17,7 +17,6 @@ import (
 )
 
 var (
-	authLimiter *mid.RateLimiter
 	apiLimiter  *mid.RateLimiter
 )
 
@@ -25,7 +24,6 @@ func initSystem() {
 	config.InitConfig()
 	db.InitDB()
 
-	authLimiter = mid.NewRateLimiter(5, 30*time.Second) // 05 req in 30 sec
 	apiLimiter = mid.NewRateLimiter(10, 1*time.Minute)  // 10 req in 1 min
 }
 
@@ -62,8 +60,9 @@ func registerServices(e *echo.Echo) {
 
 	// Services
 	healthService := services.NewHealthService()
+	wahaService := services.NewWahaService()
 
 	// Handlers
 	handlers.NewHealthHandler(apiGroup, healthService)
-
+	handlers.NewWahaHandler(apiGroup, wahaService)
 }
