@@ -16,3 +16,14 @@ type WahaProfile struct {
 	Name    string `json:"name"`    // User's display name
 	Picture string `json:"picture"` // URL to profile picture
 }
+
+type WahaSessionInfo struct {
+	Name   string      `json:"name"`
+	Status string      `json:"status"` // STOPPED, STARTING, SCAN_QR_CODE, WORKING, FAILED
+	Me     *WahaMeInfo `json:"me,omitempty"`
+}
+
+type WahaMeInfo struct {
+	ID       string `json:"id"`       // e.g. "123456789@c.us"
+	PushName string `json:"pushName"` // User's display name
+}

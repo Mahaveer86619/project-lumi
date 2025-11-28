@@ -43,27 +43,17 @@ func (s *AuthService) RegisterUser(username, email, password string) (*views.Aut
 		return nil, err
 	}
 
-	var user models.UserProfile
-	err = db.DB.Transaction(func(tx *gorm.DB) error {
-		avatarHash := s.AvatarService.GenerateHash(email)
-		user = models.UserProfile{
-			Username:  username,
-			Email:     email,
-			Password:  hashedPwd,
-			AvatarUrl: s.AvatarService.GetAvatarURL(avatarHash),
-		}
+	avatarHash := s.AvatarService.GenerateHash(email)
+	user := models.UserProfile{
+		Username:  username,
+		Email:     email,
+		Password:  hashedPwd,
+		AvatarUrl: s.AvatarService.GetAvatarURL(avatarHash),
+	}
 
-		if err := tx.Create(&user).Error; err != nil {
-			return err
-		}
-
-		security := models.UserSecurity{UserID: user.ID}
-		if err := tx.Create(&security).Error; err != nil {
-			return err
-		}
-
-		return nil
-	})
+	if err := db.DB.Create(&user).Error; err != nil {
+		return nil, err
+	}
 
 	if err != nil {
 		return nil, err
@@ -78,29 +68,8 @@ func (s *AuthService) LoginWithUsername(username, password string) (*views.AuthR
 		return nil, errors.New("invalid credentials")
 	}
 
-	var security models.UserSecurity
-	if err := db.DB.Where("user_id = ?", user.ID).First(&security).Error; err != nil {
-		return nil, errors.New("system error: security profile missing")
-	}
-
-	if security.IsSuspended {
-		return nil, errors.New("account is suspended")
-	}
-
-	if security.IsLocked {
-		if time.Now().Before(security.LockedUntil) {
-			return nil, errors.New("account is temporarily locked due to too many failed attempts")
-		}
-		s.resetLock(&security)
-	}
-
 	if err := utils.CheckPassword(user.Password, password); err != nil {
-		s.handleFailedAttempt(&security)
 		return nil, errors.New("invalid credentials")
-	}
-
-	if security.FailedLoginAttempts > 0 {
-		s.resetLock(&security)
 	}
 
 	return s.generateAuthResponse(user)
@@ -118,22 +87,6 @@ func (s *AuthService) RefreshToken(refreshToken string) (*views.AuthResponse, er
 	}
 
 	return s.generateAuthResponse(user)
-}
-
-func (s *AuthService) handleFailedAttempt(sec *models.UserSecurity) {
-	sec.FailedLoginAttempts++
-	if sec.FailedLoginAttempts >= MaxLoginAttempts {
-		sec.IsLocked = true
-		sec.LockedUntil = time.Now().Add(LockDuration)
-	}
-	db.DB.Save(sec)
-}
-
-func (s *AuthService) resetLock(sec *models.UserSecurity) {
-	sec.IsLocked = false
-	sec.FailedLoginAttempts = 0
-	sec.LockedUntil = time.Time{} // Zero time
-	db.DB.Save(sec)
 }
 
 func (s *AuthService) generateAuthResponse(user models.UserProfile) (*views.AuthResponse, error) {

@@ -17,7 +17,6 @@ func main() {
 
 	tables := []interface{}{
 		&models.UserProfile{},
-		&models.UserSecurity{},
 		&models.WhatsAppSession{},
 	}
 

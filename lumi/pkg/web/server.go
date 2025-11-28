@@ -48,16 +48,14 @@ func StartServer() {
 }
 
 func registerServices(e *echo.Echo) {
-
 	// --- Services Initialization ---
 	healthService := services.NewHealthService()
 	avatarService := services.NewAvatarService()
 	authService := services.NewAuthService(avatarService)
-	userService := services.NewUserService()
 	wahaService := services.NewWahaService()
+	userService := services.NewUserService(wahaService)
 
 	// --- Route Groups & Middleware ---
-	// Auth Group (Public, Rate Limited) -> /auth
 	authGroup := e.Group("/auth")
 	authGroup.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -66,9 +64,7 @@ func registerServices(e *echo.Echo) {
 			return nil
 		}
 	})
-	handlers.NewAuthHandler(authGroup, authService)
 
-	// API v1 Group (Rate Limited) -> /api/v1
 	apiGroup := e.Group("/api/v1")
 	apiGroup.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -78,15 +74,15 @@ func registerServices(e *echo.Echo) {
 		}
 	})
 
-	handlers.NewHealthHandler(apiGroup, healthService)
-	handlers.NewAvatarHandler(apiGroup, avatarService)
-
 	protectedGroup := apiGroup.Group("")
 	protectedGroup.Use(mid.JWTMiddleware)
 
-	handlers.NewUserHandler(protectedGroup, userService)
+	wahaGroup := protectedGroup.Group("/whatsapp")
 
 	// Handlers
-	wahaGroup := protectedGroup.Group("/whatsapp")
+	handlers.NewHealthHandler(apiGroup, healthService)
+	handlers.NewAvatarHandler(apiGroup, avatarService)
+	handlers.NewAuthHandler(authGroup, authService)
+	handlers.NewUserHandler(protectedGroup, userService)
 	handlers.NewWahaHandler(wahaGroup, wahaService)
 }

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Mahaveer86619/lumi/pkg/services"
@@ -21,11 +20,14 @@ func NewWahaHandler(group *echo.Group, wahaService *services.WahaService) *WahaH
 	group.GET("/connect", handler.ConnectWhatsApp)
 	group.GET("/me", handler.ConnectWhatsApp)
 
+	// group.POST("/restart", handler.RestartSession)
+	// group.POST("/stop", handler.StopSession)
+
 	return handler
 }
 
 func (h *WahaHandler) ConnectWhatsApp(c echo.Context) error {
-	userID, ok := c.Get("user_id").(uint)
+	_, ok := c.Get("user_id").(uint)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, views.Failure{
 			StatusCode: http.StatusUnauthorized,
@@ -33,9 +35,7 @@ func (h *WahaHandler) ConnectWhatsApp(c echo.Context) error {
 		})
 	}
 
-	sessionName := fmt.Sprintf("user_%d", userID)
-
-	err := h.wahaService.StartSession(sessionName)
+	err := h.wahaService.StartSession()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, views.Failure{
 			StatusCode: http.StatusInternalServerError,
@@ -43,7 +43,7 @@ func (h *WahaHandler) ConnectWhatsApp(c echo.Context) error {
 		})
 	}
 
-	profile, err := h.wahaService.GetProfile(sessionName)
+	profile, err := h.wahaService.GetProfile()
 	if err == nil && profile != nil {
 		return c.JSON(http.StatusOK, views.Success{
 			StatusCode: http.StatusOK,
@@ -55,7 +55,7 @@ func (h *WahaHandler) ConnectWhatsApp(c echo.Context) error {
 		})
 	}
 
-	qrBytes, err := h.wahaService.GetQRCode(sessionName)
+	qrBytes, err := h.wahaService.GetQRCode()
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, views.Failure{
 			StatusCode: http.StatusBadGateway,
@@ -67,7 +67,7 @@ func (h *WahaHandler) ConnectWhatsApp(c echo.Context) error {
 }
 
 func (h *WahaHandler) GetMe(c echo.Context) error {
-	userID, ok := c.Get("user_id").(uint)
+	_, ok := c.Get("user_id").(uint)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, views.Failure{
 			StatusCode: http.StatusUnauthorized,
@@ -75,9 +75,7 @@ func (h *WahaHandler) GetMe(c echo.Context) error {
 		})
 	}
 
-	sessionName := fmt.Sprintf("user_%d", userID)
-
-	profile, err := h.wahaService.GetProfile(sessionName)
+	profile, err := h.wahaService.GetProfile()
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, views.Failure{
 			StatusCode: http.StatusBadGateway,

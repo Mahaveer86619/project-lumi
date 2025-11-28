@@ -5,17 +5,19 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Mahaveer86619/lumi/pkg/config"
 	"github.com/Mahaveer86619/lumi/pkg/db"
 	"github.com/Mahaveer86619/lumi/pkg/views"
 )
 
 type HealthService struct {
+	wahaService *WahaService
+
 	httpClient *http.Client
 }
 
 func NewHealthService() *HealthService {
 	return &HealthService{
+		wahaService: NewWahaService(),
 		httpClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
@@ -44,35 +46,12 @@ func (h *HealthService) GetHealth() (*views.HealthResponse, error) {
 }
 
 func (h *HealthService) checkWahaService() views.Health {
-	url := fmt.Sprintf("%s/api/sessions", config.GConfig.WahaServiceURL)
-
-	req, err := http.NewRequest("GET", url, nil)
+	err := h.wahaService.PingWaha()
 	if err != nil {
 		return views.Health{
 			Name:    "waha-service",
 			IsUp:    false,
-			Message: fmt.Sprintf("Request creation failed: %v", err),
-		}
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Api-Key", config.GConfig.WahaAPIKey)
-
-	resp, err := h.httpClient.Do(req)
-	if err != nil {
-		return views.Health{
-			Name:    "waha-service",
-			IsUp:    false,
-			Message: fmt.Sprintf("Connection failed: %v", err),
-		}
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return views.Health{
-			Name:    "waha-service",
-			IsUp:    false,
-			Message: fmt.Sprintf("Unhealthy status code: %d", resp.StatusCode),
+			Message: fmt.Sprintf("Ping failed: %v", err),
 		}
 	}
 

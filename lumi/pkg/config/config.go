@@ -23,6 +23,9 @@ type Config struct {
 	// ms
 	WahaServiceURL string
 	WahaAPIKey     string
+
+	// default session
+	WahaSessionName string
 }
 
 var GConfig *Config
@@ -49,6 +52,9 @@ func InitConfig() {
 		// ms
 		WahaServiceURL: getEnv("WAHA_SERVICE_URL"),
 		WahaAPIKey:     getEnv("WAHA_API_KEY"),
+
+		// session
+		WahaSessionName: getEnv("WAHA_SESSION_NAME"),
 	}
 }
 
