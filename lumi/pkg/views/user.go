@@ -6,21 +6,20 @@ import (
 )
 
 type UserDetailsResponse struct {
-	ID           utils.MaskedId     `json:"id"`
-	Username     string             `json:"username"`
-	Email        string             `json:"email"`
-	AvatarUrl    string             `json:"avatar_url"`
-	IsLocked     bool               `json:"is_locked"`
-	IsSuspended  bool               `json:"is_suspended"`
-	TokenVersion int                `json:"token_version"`
+	ID             utils.MaskedId `json:"id"`
+	Username       string         `json:"username"`
+	Email          string         `json:"email"`
+	AvatarUrl      string         `json:"avatar_url"`
+	WhatsAppStatus string         `json:"whatsapp_status"`
 }
 
-func NewUserDetailsResponse(user models.UserProfile) *UserDetailsResponse {
+func NewUserDetailsResponse(user models.UserProfile, waStatus string) *UserDetailsResponse {
 	return &UserDetailsResponse{
-		ID:           utils.Mask(user.ID),
-		Username:     user.Username,
-		Email:        user.Email,
-		AvatarUrl:    user.AvatarUrl,
+		ID:        utils.Mask(user.ID),
+		Username:  user.Username,
+		Email:     user.Email,
+		AvatarUrl: user.AvatarUrl,
+		WhatsAppStatus: waStatus,
 	}
 }
 

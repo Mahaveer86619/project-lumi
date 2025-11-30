@@ -11,6 +11,7 @@ import (
 	"github.com/Mahaveer86619/lumi/pkg/handlers"
 	mid "github.com/Mahaveer86619/lumi/pkg/middleware"
 	"github.com/Mahaveer86619/lumi/pkg/services"
+	"github.com/Mahaveer86619/lumi/pkg/services/bot"
 	"github.com/Mahaveer86619/lumi/pkg/services/connections"
 
 	"github.com/labstack/echo/v4"
@@ -24,6 +25,7 @@ var (
 
 func initSystem() {
 	config.InitConfig()
+	config.InitConnectionsConfig()
 	db.InitDB()
 
 	authLimiter = mid.NewRateLimiter(10, 1*time.Minute) // 10 req in 1 min
@@ -56,6 +58,7 @@ func registerServices(e *echo.Echo) {
 	userService := services.NewUserService()
 	healthService := services.NewHealthService(wahaService)
 	chatService := services.NewChatService(wahaService)
+	botService := bot.NewBotService(wahaService)
 
 	// --- Route Groups & Middleware ---
 	authGroup := e.Group("/auth")
@@ -89,7 +92,7 @@ func registerServices(e *echo.Echo) {
 	handlers.NewUserHandler(protectedGroup, userService)
 	handlers.NewChatHandler(chatGroup, chatService)
 
-	wahaHandler := handlers.NewWahaHandler(wahaGroup, wahaService, chatService)
+	wahaHandler := handlers.NewWahaHandler(wahaGroup, wahaService, chatService, botService)
 
 	// Webhook
 	apiGroup.POST("/webhook", wahaHandler.HandleWebhook)

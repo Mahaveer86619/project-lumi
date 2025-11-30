@@ -3,12 +3,13 @@ package services
 import (
 	"errors"
 
+	"github.com/Mahaveer86619/lumi/pkg/config"
 	"github.com/Mahaveer86619/lumi/pkg/db"
 	"github.com/Mahaveer86619/lumi/pkg/models"
 	"github.com/Mahaveer86619/lumi/pkg/views"
 )
 
-type UserService struct {}
+type UserService struct{}
 
 func NewUserService() *UserService {
 	return &UserService{}
@@ -20,7 +21,9 @@ func (us UserService) GetUserDetails(id uint) (*views.UserDetailsResponse, error
 		return nil, errors.New("invalid credentials")
 	}
 
-	response := views.NewUserDetailsResponse(user)
+	waStatus := config.GetWhatsappConnectionStatus()
+
+	response := views.NewUserDetailsResponse(user, waStatus)
 	return response, nil
 }
 
@@ -37,7 +40,9 @@ func (us UserService) UpdateUserDetails(req views.UpdateUserRequest) (*views.Use
 		return nil, err
 	}
 
-	response := views.NewUserDetailsResponse(user)
+	waStatus := config.GetWhatsappConnectionStatus()
+
+	response := views.NewUserDetailsResponse(user, waStatus)
 	return response, nil
 }
 

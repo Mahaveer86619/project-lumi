@@ -102,7 +102,9 @@ func (h *ChatHandler) GetRegisteredChats(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, views.Failure{StatusCode: 500, Message: err.Error()})
 	}
-	return c.JSON(http.StatusOK, views.Success{StatusCode: 200, Data: chats, Message: "All Registered chats fetched"})
+
+	resp := views.NewRegisteredChatResponse(chats)
+	return c.JSON(http.StatusOK, views.Success{StatusCode: 200, Data: resp, Message: "All Registered chats fetched"})
 }
 
 func (h *ChatHandler) RegisterChat(c echo.Context) error {

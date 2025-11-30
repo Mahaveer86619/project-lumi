@@ -20,6 +20,9 @@ type Config struct {
 	// jwt
 	JWTSecret string
 
+	// Gemini config
+	GeminiAPIKey string
+
 	// ms
 	WahaServiceURL string
 	WahaAPIKey     string
@@ -47,6 +50,9 @@ func InitConfig() {
 
 		// jwt
 		JWTSecret: getEnv("JWT_SECRET"),
+
+		// Gemini config
+		GeminiAPIKey: getEnv("GEMINI_API_KEY"),
 
 		// ms
 		WahaServiceURL: getEnv("WAHA_SERVICE_URL"),

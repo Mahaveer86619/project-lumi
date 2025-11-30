@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Mahaveer86619/lumi/pkg/config"
 	"github.com/Mahaveer86619/lumi/pkg/models/connections"
 	"github.com/Mahaveer86619/lumi/pkg/services"
+	"github.com/Mahaveer86619/lumi/pkg/services/bot"
 	connService "github.com/Mahaveer86619/lumi/pkg/services/connections"
 	"github.com/Mahaveer86619/lumi/pkg/views"
 	"github.com/labstack/echo/v4"
@@ -15,12 +17,14 @@ import (
 type WahaHandler struct {
 	wahaService connService.WahaClient
 	chatService *services.ChatService
+	botService  *bot.BotService
 }
 
-func NewWahaHandler(group *echo.Group, wahaService connService.WahaClient, chatService *services.ChatService) *WahaHandler {
+func NewWahaHandler(group *echo.Group, wahaService connService.WahaClient, chatService *services.ChatService, botService *bot.BotService) *WahaHandler {
 	handler := &WahaHandler{
 		wahaService: wahaService,
 		chatService: chatService,
+		botService:  botService,
 	}
 
 	group.GET("/connect", handler.ConnectWhatsApp)
@@ -49,6 +53,8 @@ func (h *WahaHandler) HandleWebhook(c echo.Context) error {
 			break
 		}
 
+		config.SetWhatsappConnectionStatus(statusPayload.Status)
+
 		if statusPayload.Status == "WORKING" {
 			go func() {
 				profile, err := h.wahaService.GetMe()
@@ -73,18 +79,19 @@ func (h *WahaHandler) HandleWebhook(c echo.Context) error {
 		if h.chatService.IsChatAllowed(chatID) {
 			// This is a message in a registered chat -> Track it!
 			log.Printf("[TRACKED MESSAGE] Chat: %s, Body: %s, Sender: %s", chatID, msg.Body, msg.From)
-			go func(targetChat, text string) {
-				// Check if text is empty (e.g. image messages without caption)
-				if text == "" {
-					text = "[Media Message received]"
-				}
+			// go func(targetChat, text string) {
+			// 	// Check if text is empty (e.g. image messages without caption)
+			// 	if text == "" {
+			// 		text = "[Media Message received]"
+			// 	}
 
-				reply := "Echo: " + text
-				_, err := h.wahaService.SendText(targetChat, reply)
-				if err != nil {
-					log.Printf("Failed to send echo: %v", err)
-				}
-			}(chatID, msg.Body)
+			// 	reply := "Echo: " + text
+			// 	_, err := h.wahaService.SendText(targetChat, reply)
+			// 	if err != nil {
+			// 		log.Printf("Failed to send echo: %v", err)
+			// 	}
+			// }(chatID, msg.Body)
+			go h.botService.ProcessMessage(msg)
 		}
 	}
 
