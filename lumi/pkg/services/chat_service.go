@@ -38,6 +38,18 @@ func (s *ChatService) GetRegisteredChats() ([]models.RegisteredChat, error) {
 	return chats, result.Error
 }
 
+func (s *ChatService) GetRegisteredChat(chatID string) (*models.RegisteredChat, error) {
+	var chat models.RegisteredChat
+	if err := db.DB.Where("chat_id = ?", chatID).First(&chat).Error; err != nil {
+		return nil, err
+	}
+	return &chat, nil
+}
+
+func (s *ChatService) UpdateRegisteredChat(chat *models.RegisteredChat) error {
+	return db.DB.Save(chat).Error
+}
+
 func (s *ChatService) RegisterChat(chatID, name, chatType string) (*models.RegisteredChat, error) {
 	chat := models.RegisteredChat{
 		ChatID: chatID,
@@ -59,4 +71,22 @@ func (s *ChatService) IsChatAllowed(chatID string) bool {
 	var count int64
 	db.DB.Model(&models.RegisteredChat{}).Where("chat_id = ?", chatID).Count(&count)
 	return count > 0
+}
+
+func (s *ChatService) SaveMessage(chatID, role, content string) error {
+	msg := models.ChatMessage{
+		ChatID:  chatID,
+		Role:    role,
+		Content: content,
+	}
+	return db.DB.Create(&msg).Error
+}
+
+func (s *ChatService) GetChatHistory(chatID string, limit int) ([]models.ChatMessage, error) {
+	var messages []models.ChatMessage
+	if err := db.DB.Where("chat_id = ?", chatID).Order("created_at desc").Limit(limit).Find(&messages).Error; err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }

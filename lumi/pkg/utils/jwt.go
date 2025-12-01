@@ -9,8 +9,8 @@ import (
 )
 
 type JwtCustomClaims struct {
-	UserID uint   `json:"user_id"`
-	Type   string `json:"type"`
+	UserID     uint   `json:"user_id"`
+	Type       string `json:"type"`
 	jwt.RegisteredClaims
 }
 

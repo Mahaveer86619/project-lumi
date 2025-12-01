@@ -71,26 +71,25 @@ func (h *WahaHandler) HandleWebhook(c echo.Context) error {
 			break
 		}
 
+		me, err := h.wahaService.GetMe()
+		if err != nil {
+			log.Printf("Error fetching me: %v", err)
+		}
+
+		isSelfMsg := msg.From == me.ID
+		if isSelfMsg {
+			log.Printf("Self message: %s", msg.Body)
+		}
+
 		chatID := msg.From
 		if msg.FromMe {
 			chatID = msg.To
 		}
 
-		if h.chatService.IsChatAllowed(chatID) {
-			// This is a message in a registered chat -> Track it!
-			log.Printf("[TRACKED MESSAGE] Chat: %s, Body: %s, Sender: %s", chatID, msg.Body, msg.From)
-			// go func(targetChat, text string) {
-			// 	// Check if text is empty (e.g. image messages without caption)
-			// 	if text == "" {
-			// 		text = "[Media Message received]"
-			// 	}
+		isSelfChat := msg.From == msg.To
 
-			// 	reply := "Echo: " + text
-			// 	_, err := h.wahaService.SendText(targetChat, reply)
-			// 	if err != nil {
-			// 		log.Printf("Failed to send echo: %v", err)
-			// 	}
-			// }(chatID, msg.Body)
+		if h.chatService.IsChatAllowed(chatID) || isSelfChat {
+			log.Printf("[PROCESSING MESSAGE] Chat: %s, IsSelf: %v", chatID, isSelfChat)
 			go h.botService.ProcessMessage(msg)
 		}
 	}

@@ -29,7 +29,7 @@ func initSystem() {
 	db.InitDB()
 
 	authLimiter = mid.NewRateLimiter(10, 1*time.Minute) // 10 req in 1 min
-	apiLimiter = mid.NewRateLimiter(60, 1*time.Minute)  // 10 req in 1 min
+	apiLimiter = mid.NewRateLimiter(60, 1*time.Minute)  // 60 req in 1 min
 }
 
 func StartServer() {
@@ -58,7 +58,7 @@ func registerServices(e *echo.Echo) {
 	userService := services.NewUserService()
 	healthService := services.NewHealthService(wahaService)
 	chatService := services.NewChatService(wahaService)
-	botService := bot.NewBotService(wahaService)
+	botService := bot.NewBotService(wahaService, chatService)
 
 	// --- Route Groups & Middleware ---
 	authGroup := e.Group("/auth")

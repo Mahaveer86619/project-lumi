@@ -19,6 +19,7 @@ func main() {
 		&models.UserProfile{},
 		&models.WhatsAppSession{},
 		&models.RegisteredChat{},
+		&models.ChatMessage{},
 	}
 
 	log.Info("Running AutoMigrate...")

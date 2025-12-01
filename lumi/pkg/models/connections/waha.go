@@ -87,6 +87,7 @@ type WAMessage struct {
 	To        string                 `json:"to"`
 	Body      string                 `json:"body"`
 	FromMe    bool                   `json:"fromMe"`
+	Source    string                 `json:"source"`
 	HasMedia  bool                   `json:"hasMedia"`
 	Ack       int                    `json:"ack"`
 	AckName   string                 `json:"ackName"`

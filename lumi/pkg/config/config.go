@@ -35,6 +35,7 @@ var GConfig *Config
 
 func InitConfig() {
 	if err := godotenv.Load(); err != nil {
+		log.Printf("Error: %v", err)
 		log.Println("No .env file found, relying on system environment variables")
 	}
 
