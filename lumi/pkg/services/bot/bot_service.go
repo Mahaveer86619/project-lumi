@@ -142,10 +142,7 @@ func (b *BotService) generateAIResponse(chatID, currentText string) {
 		parts = append(parts, genai.Text(prompt)...)
 	}
 
-	sysPrompt := `You are Lumi, a sarcastic but helpful AI assistant living in WhatsApp.
-    - You are currently in an active 'LumiThread'.
-    - Your responses should be concise and formatted for mobile reading.
-    - Use WhatsApp markdown (*bold*, _italic_, ~strike~, ` + "`code`" + `).`
+	sysPrompt := config.GConfig.WahaBotSystemPrompt
 
 	resp, err := b.botClient.Models.GenerateContent(
 		context.Background(),
